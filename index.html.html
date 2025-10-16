@@ -1,0 +1,179 @@
+
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <title>Előrendelés – A sötét varázsló stigmája (FormSubmit verzió)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{--bg:#0f1115;--card:#121524;--txt:#e7e9ee;--muted:#aab1c3;--line:#2a2f3f;--acc:#8aa0ff}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
+    .wrap{max-width:860px;margin:24px auto;padding:0 16px}
+    .card{background:var(--card);border-radius:18px;padding:22px;border:1px solid var(--line);box-shadow:0 10px 24px rgba(0,0,0,.30)}
+    h1{margin:0 0 8px;font-size:28px}
+    p.lead{margin:0 0 16px;color:var(--muted)}
+    form{display:grid;gap:14px}
+    .grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+    label{font-weight:600;font-size:14px}
+    input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0b0e18;color:var(--txt)}
+    input[type=checkbox]{width:auto}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer;background:var(--acc);color:#0b0e17}
+    .muted{color:var(--muted)}
+    .note{background:#0d1120;border:1px dashed var(--line);padding:12px;border-radius:12px;color:var(--muted)}
+    .ok{color:#63d471;font-weight:700}
+    .hide{display:none}
+    .total{background:#0d1120;border:1px solid var(--line);padding:12px;border-radius:12px}
+    .pill{display:inline-block;background:#0d1120;border:1px solid var(--line);padding:6px 10px;border-radius:999px;color:var(--muted);font-size:12px}
+  </style>
+  <script>
+    function Ft(n){ return new Intl.NumberFormat('hu-HU').format(Math.round(n)) + " Ft"; }
+    function unit(sku){ return sku === 'BK-SVMU-1-PRINT' ? 4999 : 3599; }
+    function rnd2(){ return Math.random().toString(36).slice(2,4).toUpperCase(); }
+    function makeOrderId(prefix){
+      const d = new Date();
+      const y = String(d.getFullYear()).slice(2);
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      const ss = String(d.getSeconds()).padStart(2,'0');
+      const pre = (prefix || 'PR').toUpperCase().replace(/[^A-Z0-9]/g,'');
+      return `${pre}${y}-${m}${day}-${hh}${mm}${ss}-${rnd2()}`;
+    }
+    function getParam(name){ const url=new URL(window.location.href); return url.searchParams.get(name)||""; }
+    function updateTotal(){
+      const sku = document.getElementById('sku').value;
+      const qty = Math.max(1, parseInt(document.getElementById('qty').value||"1",10));
+      const u = unit(sku);
+      document.getElementById('grossTxt').textContent = Ft(qty*u);
+      document.getElementById('unitPrice').value = u;
+      document.getElementById('gross').value = qty*u;
+    }
+    function beforeSubmit(){
+      const id = makeOrderId(document.getElementById('prefix').value);
+      document.getElementById('order_id').value = id;
+      document.getElementById('_subject').value = 'Előrendelés – ' + id;
+      document.getElementById('_replyto').value = document.getElementById('email').value;
+      document.getElementById('submitBtn').disabled = true;
+      document.getElementById('thanks').classList.remove('hide');
+    }
+    window.addEventListener('DOMContentLoaded', ()=>{
+      document.getElementById('channel').value = getParam('src') || '';
+      updateTotal();
+      document.getElementById('qty').addEventListener('input', updateTotal);
+      document.getElementById('sku').addEventListener('change', updateTotal);
+    });
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Előrendelés</h1>
+      <p class="lead">A sötét varázsló stigmája – <strong>4 999 Ft</strong> (csak 200 példány nálam). Első 50: ajándék dobókocka. Az első 100 között: prémium kockaszett sorsolás.</p>
+      <p class="pill">Nincs programozás, nincs saját szerver. Az adatok e-mailben érkeznek hozzád, a vevő automatikus válaszüzenetet kap a bankszámláddal.</p>
+
+      <iframe name="hidden_iframe" style="display:none;"></iframe>
+
+      <form id="preForm" method="POST" action="https://formsubmit.co/elevrondarkfantasy@gmail.com" target="hidden_iframe" onsubmit="beforeSubmit()">
+        <div class="grid">
+          <div>
+            <label for="name">Név*</label>
+            <input id="name" name="Név" required placeholder="Vezetéknév Keresztnév">
+          </div>
+          <div>
+            <label for="email">E-mail*</label>
+            <input id="email" name="E-mail" type="email" required placeholder="valaki@example.hu">
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label for="phone">Telefonszám*</label>
+            <input id="phone" name="Telefon" required placeholder="+36…">
+          </div>
+          <div>
+            <label for="qty">Darabszám*</label>
+            <input id="qty" name="Mennyiség" type="number" min="1" max="10" value="1" required>
+          </div>
+        </div>
+
+        <div>
+          <label for="sku">Termék*</label>
+          <select id="sku" name="TermékSKU" required>
+            <option value="BK-SVMU-1-PRINT" selected>Könyv – A sötét varázsló stigmája (PRINT) – 4 999 Ft</option>
+            <option value="EB-SVMU-0-NOV">Előtörténet – eBook (NOVELLA) – 3 599 Ft</option>
+          </select>
+          <small class="muted">Ha többféle tételt kérsz, írd a megjegyzéshez.</small>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label for="bill">Számlázási cím*</label>
+            <input id="bill" name="Számlázási cím" required placeholder="Irányítószám, város, utca, házszám">
+          </div>
+          <div>
+            <label for="ship">Szállítási cím*</label>
+            <input id="ship" name="Szállítási cím" required placeholder="Irányítószám, város, utca, házszám">
+            <small><input type="checkbox" id="same" onclick="document.getElementById('ship').value=document.getElementById('bill').value"> <label for="same">megegyezik a számlázási címmel</label></small>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label for="delivery">Szállítás*</label>
+            <select id="delivery" name="Szállítás" required>
+              <option value="FUTÁR" selected>Futár (a vevő fizeti)</option>
+              <option value="SZEMÉLYES">Személyes átvétel</option>
+            </select>
+          </div>
+          <div>
+            <label for="pay">Fizetés*</label>
+            <select id="pay" name="Fizetés" required>
+              <option value="ÁTUTALÁS" selected>Banki átutalás (előre)</option>
+              <option value="BANKKÁRTYA">Bankkártya (később)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="notes">Megjegyzés</label>
+          <textarea id="notes" name="Megjegyzés" rows="3" placeholder="Speciális kérés, többféle tétel bontása, stb."></textarea>
+        </div>
+
+        <!-- Hidden computed fields to include in the email -->
+        <input type="hidden" id="order_id" name="RendelésAzonosító" value="">
+        <input type="hidden" id="channel" name="Csatorna" value="">
+        <input type="hidden" id="unitPrice" name="Egységár" value="4999">
+        <input type="hidden" id="gross" name="BruttóÖsszeg" value="4999">
+        <input type="hidden" id="prefix" value="PR">
+        <!-- FormSubmit special fields -->
+        <input type="hidden" id="_subject" name="_subject" value="Előrendelés">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_captcha" value="true">
+        <input type="hidden" id="_replyto" name="_replyto" value="">
+        <input type="hidden" name="_autoresponse" value="Köszönjük az előrendelést! Az utaláshoz szükséges adatok: Kedvezményezett: Zordán Erik | Bank: OTP Bank | IBAN: HU00 0000 0000 0000 0000 0000 0000 | Közlemény: RendelésAzonosító + Név. Az összeg beérkezése után visszaigazolunk és jelezzük a postázást.">
+
+        <div class="total">
+          <strong>Várható bruttó összeg: <span id="grossTxt">0 Ft</span></strong>
+          <div class="muted">A szállítás díját a feladáskor pontosítjuk.</div>
+        </div>
+
+        <div class="note">
+          Az űrlap elküldésével elfogadod az adatkezelési tájékoztatót. A rendelésről e-mailt kapsz, benne a bankszámlaszámmal és a közleménnyel (RendelésAzonosító + Név).
+        </div>
+
+        <!-- Honeypot: bots kitöltik, emberek nem -->
+<input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+<div class="row">
+          <button id="submitBtn" class="btn" type="submit">Előrendelés elküldése</button>
+          <span id="thanks" class="ok hide">Köszönjük! Ellenőrizd az e-mailjeidet (visszaigazolás elküldve).</span>
+        </div>
+      </form>
+
+      <div class="muted" style="margin-top:10px">Forrás paraméter támogatott: add a link végére pl. <code>?src=DIR_TIKTOK</code></div>
+    </div>
+  </div>
+</body>
+</html>
